@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   before_action :signed_in_user, only: [:index, :edit, :update]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
+  before_action :signed_in_n_cr, only: [:new, :create]
   
   def index
     @users = User.paginate(page: params[:page])
@@ -39,9 +40,11 @@ class UsersController < ApplicationController
   end
   
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User deleted."
-    redirect_to users_url
+    unless current_user.id == params[:id]
+      User.find(params[:id]).destroy
+      flash[:success] = "User deleted."
+      redirect_to users_url
+    end  
   end
   
   private
@@ -67,5 +70,11 @@ class UsersController < ApplicationController
     
     def admin_user
       redirect_to(root_url) unless current_user.admin?
+    end
+    
+    def signed_in_n_cr
+      if signed_in?
+        redirect_to root_url 
+      end
     end
 end
